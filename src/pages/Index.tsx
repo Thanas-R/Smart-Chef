@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Hero } from "@/components/Hero";
 import { RecipeGrid } from "@/components/RecipeGrid";
 import { RecipeModal } from "@/components/RecipeModal";
+import { Header } from "@/components/Header";
 import { RecipeMatch } from "@/types/recipe";
 import { MOCK_RECIPES } from "@/data/constants";
 import { ArrowLeft } from "lucide-react";
@@ -58,6 +59,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
+      
       {!showResults ? (
         <Hero
           selectedIngredients={selectedIngredients}
@@ -65,22 +68,22 @@ const Index = () => {
           onSearch={calculateMatches}
         />
       ) : (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <div className="mb-8 space-y-4">
+        <div className="container mx-auto px-4 py-24 max-w-7xl">
+          <div className="mb-10 space-y-6 animate-fade-in">
             <Button
               onClick={resetSearch}
               variant="ghost"
-              className="gap-2"
+              className="gap-2 hover:bg-secondary"
             >
               <ArrowLeft className="w-4 h-4" />
               New Search
             </Button>
-            <div>
-              <h2 className="text-3xl font-bold mb-2">
-                Found {recommendations.length} recipes
+            <div className="space-y-2">
+              <h2 className="text-4xl font-bold">
+                Found {recommendations.length} {recommendations.length === 1 ? 'recipe' : 'recipes'}
               </h2>
-              <p className="text-muted-foreground">
-                Based on: {selectedIngredients.join(", ")}
+              <p className="text-lg text-muted-foreground">
+                Based on: <span className="text-primary font-medium">{selectedIngredients.join(", ")}</span>
               </p>
             </div>
           </div>

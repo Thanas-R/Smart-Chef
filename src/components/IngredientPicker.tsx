@@ -64,41 +64,45 @@ export const IngredientPicker = ({
     <div className="w-full max-w-3xl mx-auto space-y-4">
       <div className="relative">
         {/* Frosted glass search bar */}
-        <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-4 shadow-2xl">
-          <div className="flex flex-wrap gap-2 mb-3">
+        <div className="bg-card/60 backdrop-blur-2xl border-2 border-border/50 rounded-2xl p-6 shadow-2xl hover:border-primary/30 transition-all duration-300">
+          <div className="flex flex-wrap gap-2 mb-4 min-h-[2rem]">
             {selectedIngredients.map((ingredient) => (
               <div
                 key={ingredient}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary rounded-full text-sm font-medium animate-fade-in"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 border border-primary/30 rounded-full text-sm font-semibold animate-fade-in hover:bg-primary/30 transition-colors"
               >
                 <span>{ingredient}</span>
                 <button
                   onClick={() => removeIngredient(ingredient)}
-                  className="hover:bg-background/20 rounded-full p-0.5 transition-colors"
+                  className="hover:bg-primary/40 rounded-full p-1 transition-colors"
+                  aria-label={`Remove ${ingredient}`}
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             ))}
+            {selectedIngredients.length === 0 && (
+              <p className="text-muted-foreground text-sm py-1">Start typing to add ingredients...</p>
+            )}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 ref={inputRef}
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type an ingredient..."
-                className="pl-10 bg-background/60 border-border/50 h-12 text-base"
+                placeholder="Type an ingredient (e.g., Tomato, Garlic, Rice)..."
+                className="pl-12 bg-background/80 border-border h-14 text-base focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <Button
               onClick={onSearch}
               disabled={selectedIngredients.length === 0}
-              className="h-12 px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+              className="h-14 px-10 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base disabled:opacity-40 shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all"
             >
               Find Recipes
             </Button>
@@ -107,16 +111,21 @@ export const IngredientPicker = ({
 
         {/* Dropdown suggestions */}
         {showSuggestions && (
-          <div className="absolute top-full mt-2 w-full bg-popover border border-border rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto animate-fade-in">
-            {filteredSuggestions.map((suggestion) => (
+          <div className="absolute top-full mt-2 w-full bg-popover/95 backdrop-blur-lg border-2 border-border rounded-xl shadow-2xl z-50 max-h-72 overflow-y-auto animate-fade-in">
+            {filteredSuggestions.slice(0, 10).map((suggestion) => (
               <button
                 key={suggestion}
                 onClick={() => addIngredient(suggestion)}
-                className="w-full text-left px-4 py-3 hover:bg-secondary transition-colors text-sm"
+                className="w-full text-left px-5 py-3 hover:bg-primary/10 hover:text-primary transition-all text-sm font-medium border-b border-border/50 last:border-0"
               >
                 {suggestion}
               </button>
             ))}
+            {filteredSuggestions.length > 10 && (
+              <div className="px-5 py-2 text-xs text-muted-foreground text-center">
+                +{filteredSuggestions.length - 10} more ingredients available
+              </div>
+            )}
           </div>
         )}
       </div>
