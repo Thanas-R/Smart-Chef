@@ -7,10 +7,10 @@ export const MatchBadge = ({ percentage }: MatchBadgeProps) => {
   
   return (
     <div
-      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+      className={`inline-flex items-center px-4 py-2 rounded-full text-xs font-bold shadow-sm ${
         isHighMatch
-          ? "bg-success/20 text-success"
-          : "bg-warning/20 text-warning"
+          ? "bg-success/10 text-success border-2 border-success/20"
+          : "bg-primary/10 text-primary border-2 border-primary/20"
       }`}
     >
       {percentage}% Match

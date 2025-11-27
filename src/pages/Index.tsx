@@ -68,22 +68,22 @@ const Index = () => {
           onSearch={calculateMatches}
         />
       ) : (
-        <div className="container mx-auto px-4 py-24 max-w-7xl">
-          <div className="mb-10 space-y-6 animate-fade-in">
+        <div className="container mx-auto px-6 py-28 max-w-7xl">
+          <div className="mb-12 space-y-6 animate-fade-in">
             <Button
               onClick={resetSearch}
               variant="ghost"
-              className="gap-2 hover:bg-secondary"
+              className="gap-2 hover:bg-secondary rounded-2xl px-6 py-6 font-semibold"
             >
               <ArrowLeft className="w-4 h-4" />
               New Search
             </Button>
-            <div className="space-y-2">
-              <h2 className="text-4xl font-bold">
-                Found {recommendations.length} {recommendations.length === 1 ? 'recipe' : 'recipes'}
+            <div className="space-y-3">
+              <h2 className="text-5xl font-serif font-bold text-foreground">
+                Found {recommendations.length} {recommendations.length === 1 ? 'Recipe' : 'Recipes'}
               </h2>
               <p className="text-lg text-muted-foreground">
-                Based on: <span className="text-primary font-medium">{selectedIngredients.join(", ")}</span>
+                Based on: <span className="text-primary font-semibold">{selectedIngredients.join(", ")}</span>
               </p>
             </div>
           </div>

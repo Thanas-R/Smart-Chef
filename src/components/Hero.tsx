@@ -1,5 +1,5 @@
-import heroImage from "@/assets/hero-bg-dark.jpg";
 import { IngredientPicker } from "./IngredientPicker";
+import { ChefHat } from "lucide-react";
 
 interface HeroProps {
   selectedIngredients: string[];
@@ -13,23 +13,20 @@ export const Hero = ({
   onSearch,
 }: HeroProps) => {
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 pt-20">
-      {/* Background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroImage})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background/95" />
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16">
       {/* Content */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto text-center space-y-10 py-20">
-        <div className="space-y-6 animate-fade-in">
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
-            What can you cook
-            <span className="block text-primary mt-2">right now?</span>
+      <div className="w-full max-w-6xl mx-auto text-center space-y-12 py-12">
+        <div className="space-y-8 animate-fade-in">
+          <div className="flex justify-center">
+            <div className="bg-primary/10 p-6 rounded-full">
+              <ChefHat className="w-16 h-16 text-primary" />
+            </div>
+          </div>
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold tracking-tight leading-tight text-foreground">
+            Find Your Perfect
+            <span className="block text-primary mt-2">Recipe</span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Enter the ingredients you have, and discover delicious recipes you can make today.
           </p>
         </div>

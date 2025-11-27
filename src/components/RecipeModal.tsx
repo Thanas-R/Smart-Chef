@@ -20,30 +20,30 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] bg-card border-border">
+      <DialogContent className="max-w-4xl max-h-[90vh] bg-card border-2 border-border rounded-3xl">
         <DialogHeader>
-          <DialogTitle className="text-3xl font-bold pr-8">{recipe.title}</DialogTitle>
+          <DialogTitle className="text-4xl font-serif font-bold pr-8 text-foreground">{recipe.title}</DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="h-[75vh] pr-4">
           <div className="space-y-8">
             {/* Meta info */}
-            <div className="flex flex-wrap gap-6 items-center pb-4 border-b border-border">
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-primary" />
-                <div className="text-sm">
-                  <span className="font-medium">Prep:</span> {recipe.prepTime} min
-                  <span className="mx-2">|</span>
-                  <span className="font-medium">Cook:</span> {recipe.cookTime} min
+            <div className="flex flex-wrap gap-3 items-center pb-6 border-b border-border">
+              <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
+                <Clock className="w-4 h-4 text-primary" />
+                <div className="text-sm font-semibold text-foreground">
+                  <span>Prep:</span> {recipe.prepTime}m
+                  <span className="mx-2">•</span>
+                  <span>Cook:</span> {recipe.cookTime}m
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <ChefHat className="w-5 h-5 text-primary" />
-                <span className="text-sm font-medium">{recipe.difficulty}</span>
+              <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
+                <ChefHat className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">{recipe.difficulty}</span>
               </div>
               {recipe.cuisine && (
-                <div className="text-sm">
-                  <span className="font-medium">Cuisine:</span> {recipe.cuisine}
+                <div className="bg-secondary/50 px-4 py-2 rounded-full">
+                  <span className="text-sm font-semibold text-foreground">{recipe.cuisine}</span>
                 </div>
               )}
               <MatchBadge percentage={recipe.matchPercentage} />
@@ -51,17 +51,17 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
 
             {/* Ingredients */}
             <div>
-              <h3 className="text-xl font-bold mb-4">Ingredients</h3>
+              <h3 className="text-2xl font-serif font-bold mb-5 text-foreground">Ingredients</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {recipe.ingredients.map((ingredient, idx) => {
                   const hasIngredient = recipe.hasIngredients.includes(ingredient);
                   return (
                     <div
                       key={`${ingredient}-${idx}`}
-                      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                      className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-colors ${
                         hasIngredient
-                          ? "bg-success/10 border-success/30"
-                          : "bg-muted/50 border-border"
+                          ? "bg-success/5 border-success/30"
+                          : "bg-muted/30 border-border"
                       }`}
                     >
                       {hasIngredient ? (
@@ -69,7 +69,7 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
                       ) : (
                         <X className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                       )}
-                      <span className={`text-sm font-medium ${
+                      <span className={`text-sm font-semibold ${
                         hasIngredient ? "text-foreground" : "text-muted-foreground"
                       }`}>
                         {ingredient}
@@ -82,14 +82,14 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
 
             {/* Instructions */}
             <div>
-              <h3 className="text-xl font-bold mb-4">Instructions</h3>
-              <div className="space-y-4">
+              <h3 className="text-2xl font-serif font-bold mb-5 text-foreground">Instructions</h3>
+              <div className="space-y-5">
                 {recipe.instructions.map((instruction, idx) => (
                   <div key={idx} className="flex gap-4 group">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shadow-lg">
+                    <span className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-base font-bold shadow-md">
                       {idx + 1}
                     </span>
-                    <p className="text-sm text-foreground/90 pt-1 leading-relaxed flex-1">
+                    <p className="text-sm text-foreground/80 pt-2 leading-relaxed flex-1 font-medium">
                       {instruction}
                     </p>
                   </div>
