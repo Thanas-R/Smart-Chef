@@ -19,16 +19,15 @@ const Index = () => {
       return;
     }
 
-    const matches: RecipeMatch[] = MOCK_RECIPES.map((recipe) => {
-      const recipeIngredients = new Set(recipe.ingredients.map((i) => i.toLowerCase()));
-      const userIngredients = new Set(selectedIngredients.map((i) => i.toLowerCase()));
+    const userIngredients = new Set(selectedIngredients.map((i) => i.toLowerCase().trim()));
 
+    const matches: RecipeMatch[] = MOCK_RECIPES.map((recipe) => {
       const hasIngredients = recipe.ingredients.filter((ingredient) =>
-        userIngredients.has(ingredient.toLowerCase())
+        userIngredients.has(ingredient.toLowerCase().trim())
       );
 
       const missingIngredients = recipe.ingredients.filter(
-        (ingredient) => !userIngredients.has(ingredient.toLowerCase())
+        (ingredient) => !userIngredients.has(ingredient.toLowerCase().trim())
       );
 
       const matchPercentage = Math.round(
@@ -43,7 +42,6 @@ const Index = () => {
       };
     });
 
-    // Sort by match percentage (descending)
     const sortedMatches = matches
       .filter((match) => match.matchPercentage > 0)
       .sort((a, b) => b.matchPercentage - a.matchPercentage);

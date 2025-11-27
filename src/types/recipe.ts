@@ -7,6 +7,7 @@ export interface Recipe {
   cookTime: number;
   difficulty: "Easy" | "Medium" | "Hard";
   cuisine?: string;
+  note?: string;
 }
 
 export interface RecipeMatch extends Recipe {
