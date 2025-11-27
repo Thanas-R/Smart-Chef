@@ -10,7 +10,7 @@ export const Hero = ({
   onIngredientsChange,
   onSearch
 }: HeroProps) => {
-  return <div className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16">
+  return <div className="min-h-screen flex items-center justify-center px-4 pt-12 pb-16">
       {/* Content */}
       <div className="w-full max-w-6xl mx-auto text-center space-y-12 py-12">
         <div className="space-y-8 animate-fade-in">
