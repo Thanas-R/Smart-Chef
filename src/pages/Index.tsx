@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Hero } from "@/components/Hero";
 import { RecipeGrid } from "@/components/RecipeGrid";
 import { RecipeModal } from "@/components/RecipeModal";
-import { AboutPopover } from "@/components/AboutPopover";
 import { Header } from "@/components/Header";
 import { RecipeMatch } from "@/types/recipe";
 import { MOCK_RECIPES } from "@/data/constants";
@@ -99,8 +98,6 @@ const Index = () => {
         isOpen={!!selectedRecipe}
         onClose={() => setSelectedRecipe(null)}
       />
-
-      <AboutPopover />
     </div>
   );
 };
