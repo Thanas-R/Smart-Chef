@@ -1,26 +1,21 @@
 import { IngredientPicker } from "./IngredientPicker";
 import { ChefHat } from "lucide-react";
-
 interface HeroProps {
   selectedIngredients: string[];
   onIngredientsChange: (ingredients: string[]) => void;
   onSearch: () => void;
 }
-
 export const Hero = ({
   selectedIngredients,
   onIngredientsChange,
-  onSearch,
+  onSearch
 }: HeroProps) => {
-  return (
-    <div className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16">
+  return <div className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16">
       {/* Content */}
       <div className="w-full max-w-6xl mx-auto text-center space-y-12 py-12">
         <div className="space-y-8 animate-fade-in">
           <div className="flex justify-center">
-            <div className="bg-primary/10 p-6 rounded-full">
-              <ChefHat className="w-16 h-16 text-primary" />
-            </div>
+            
           </div>
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold tracking-tight leading-tight text-foreground">
             Find Your Perfect
@@ -31,12 +26,7 @@ export const Hero = ({
           </p>
         </div>
 
-        <IngredientPicker
-          selectedIngredients={selectedIngredients}
-          onIngredientsChange={onIngredientsChange}
-          onSearch={onSearch}
-        />
+        <IngredientPicker selectedIngredients={selectedIngredients} onIngredientsChange={onIngredientsChange} onSearch={onSearch} />
       </div>
-    </div>
-  );
+    </div>;
 };
