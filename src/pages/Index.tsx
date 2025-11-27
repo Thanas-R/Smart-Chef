@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Hero } from "@/components/Hero";
 import { RecipeGrid } from "@/components/RecipeGrid";
 import { RecipeModal } from "@/components/RecipeModal";
+import { AboutDialog } from "@/components/AboutDialog";
 import { Header } from "@/components/Header";
 import { RecipeMatch } from "@/types/recipe";
 import { MOCK_RECIPES } from "@/data/constants";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
@@ -13,6 +14,7 @@ const Index = () => {
   const [recommendations, setRecommendations] = useState<RecipeMatch[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<RecipeMatch | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
 
   const calculateMatches = () => {
     if (selectedIngredients.length === 0) {
@@ -98,6 +100,22 @@ const Index = () => {
         isOpen={!!selectedRecipe}
         onClose={() => setSelectedRecipe(null)}
       />
+
+      <AboutDialog
+        isOpen={showAbout}
+        onClose={() => setShowAbout(false)}
+      />
+
+      {/* Footer with Chef Icon */}
+      <div className="fixed bottom-8 right-8 z-40">
+        <button
+          onClick={() => setShowAbout(true)}
+          className="group bg-primary hover:bg-primary/90 text-primary-foreground rounded-full p-6 shadow-2xl transition-all duration-300 hover:scale-110 hover:shadow-primary/50"
+          aria-label="About Us"
+        >
+          <ChefHat className="w-10 h-10" />
+        </button>
+      </div>
     </div>
   );
 };
