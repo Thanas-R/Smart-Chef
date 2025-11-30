@@ -1,82 +1,138 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-import json
-import uuid
 import os
+import json
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import google.generativeai as genai
 
 app = FastAPI()
 
-# Allow frontend
+# -----------------------------
+#  CORS (allow frontend calls)
+# -----------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For development, later restrict to Vercel domain
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---- Load & Normalize Recipes ----
+# -----------------------------
+#  Load API Key
+# -----------------------------
+GEMINI_API_KEY = os.getenv("GOOGLE_GEMINI_API_KEY")
 
-def normalize_recipe(r):
-    """Convert your simple recipe format into full standard format."""
-    return {
-        "id": r.get("id") or str(uuid.uuid4()),
-        "title": r.get("name", "Untitled Recipe"),
-        "note": r.get("note", ""),
-        "ingredients": r.get("ingredients", []),
-        "instructions": r.get("instructions", ["No instructions provided."]),
-        "prepTime": r.get("prepTime", 10),
-        "cookTime": r.get("cookTime", 10),
-        "difficulty": r.get("difficulty", "Easy"),
-        "cuisine": r.get("cuisine", "")
-    }
+if not GEMINI_API_KEY:
+    raise Exception("Missing: GOOGLE_GEMINI_API_KEY environment variable")
 
+genai.configure(api_key=GEMINI_API_KEY)
+
+# -----------------------------
+#   Models
+# -----------------------------
+class IngredientsRequest(BaseModel):
+    ingredients: list[str]
+
+class GenerateInstructionsRequest(BaseModel):
+    recipe_id: str
+    recipe_name: str
+    ingredients: list[str]
+
+# -----------------------------
+#   Load Recipes Helper
+# -----------------------------
 def load_recipes():
-    path = os.path.join(os.path.dirname(__file__), "recipes.json")
-    with open(path, "r", encoding="utf-8") as f:
-        raw = json.load(f)
-    return [normalize_recipe(r) for r in raw]
+    try:
+        with open("recipes.json", "r") as f:
+            return json.load(f)
+    except:
+        raise HTTPException(status_code=500, detail="Could not load recipes.json")
 
-recipes = load_recipes()
+def save_recipes(data):
+    with open("recipes.json", "w") as f:
+        json.dump(data, f, indent=2)
+
+# -----------------------------
+#   Get All Ingredients
+# -----------------------------
+@app.get("/api/ingredients")
+async def get_ingredients():
+    data = load_recipes()
+    ingredients = sorted({i for r in data["recipes"] for i in r["ingredients"]})
+    return {"ingredients": list(ingredients)}
+
+# -----------------------------
+#   Find Matching Recipes
+# -----------------------------
+@app.post("/api/recipes/match")
+async def match_recipes(req: IngredientsRequest):
+    data = load_recipes()
+    given = set(i.lower() for i in req.ingredients)
+
+    matches = []
+    for r in data["recipes"]:
+        recipe_ingredients = set(i.lower() for i in r["ingredients"])
+
+        has = list(recipe_ingredients & given)
+        missing = list(recipe_ingredients - given)
+
+        match_pct = int((len(has) / len(recipe_ingredients)) * 100)
+
+        matches.append({
+            "id": r.get("id"),
+            "name": r.get("name"),
+            "title": r.get("name"),
+            "note": r.get("note"),
+            "ingredients": r["ingredients"],
+            "hasIngredients": has,
+            "missingIngredients": missing,
+            "matchPercentage": match_pct,
+            "instructions": r.get("instructions", [])
+        })
+
+    matches.sort(key=lambda x: x["matchPercentage"], reverse=True)
+    return {"matches": matches}
+
+# -----------------------------
+#   Auto-Generate Instructions
+# -----------------------------
+@app.post("/api/generate-instructions")
+async def generate_instructions(request: GenerateInstructionsRequest):
+    data = load_recipes()
+
+    recipe = next((r for r in data["recipes"] if r["id"] == request.recipe_id), None)
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    model = genai.GenerativeModel("gemini-1.5-flash")
+
+    prompt = f"""
+Generate detailed, beginner-friendly step-by-step instructions for the recipe "{request.recipe_name}".
+
+Use these ingredients: {', '.join(request.ingredients)}
+
+Output ONLY a clean numbered list of steps.
+Each step must be a full sentence.
+"""
+
+    try:
+        response = model.generate_content(prompt)
+        raw_text = response.text.strip()
+
+        steps = [
+            line.strip()
+            for line in raw_text.split("\n")
+            if line.strip() and not line.startswith("#")
+        ]
+
+        recipe["instructions"] = steps
+        save_recipes(data)
+
+        return {"instructions": steps}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-# ---- Ingredient Matching Helper ----
-
-def match_recipe(user_ingredients, recipe):
-    recipe_ingredients = [i.lower() for i in recipe["ingredients"]]
-    user_ingredients = [i.lower() for i in user_ingredients]
-
-    matched = [i for i in recipe_ingredients if i in user_ingredients]
-    missing = [i for i in recipe_ingredients if i not in user_ingredients]
-
-    match_pct = int((len(matched) / len(recipe_ingredients)) * 100)
-
-    return {
-        "id": recipe["id"],
-        "title": recipe["title"],
-        "note": recipe["note"],
-        "ingredients": recipe["ingredients"],
-        "matchedIngredients": matched,
-        "missingIngredients": missing,
-        "matchPercentage": match_pct
-    }
-
-
-# ---- API ROUTES ----
-
-@app.get("/")
-def home():
-    return {"message": "SmartChef Backend Running"}
-
-@app.post("/match")
-def match_recipes(data: dict):
-    user_ingredients = data.get("ingredients", [])
-
-    results = [
-        match_recipe(user_ingredients, r)
-        for r in recipes
-    ]
-
-    results.sort(key=lambda x: x["matchPercentage"], reverse=True)
-    return results
 
