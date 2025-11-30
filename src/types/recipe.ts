@@ -8,6 +8,10 @@ export interface Recipe {
   difficulty: "Easy" | "Medium" | "Hard";
   cuisine?: string;
   note?: string;
+  description?: string;
+  servings?: number;
+  equipment?: string[];
+  chef_tips?: string[];
 }
 
 export interface RecipeMatch extends Recipe {
