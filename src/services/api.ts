@@ -47,4 +47,17 @@ export const api = {
     const data: RecipeMatchResponse = await res.json();
     return data.matches;
   },
+
+  async generateInstructions(recipeId: string, recipeName: string, ingredients: string[]): Promise<string[]> {
+    const res = await fetch(`${BASE_URL}/api/generate-instructions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipe_id: recipeId, recipe_name: recipeName, ingredients }),
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to generate instructions: ${res.statusText}`);
+    }
+    const data = await res.json();
+    return data.instructions;
+  },
 };
