@@ -1,0 +1,13 @@
+[
+  {
+    "id": "1",
+    "title": "Tomato Omelette",
+    "ingredients": ["eggs", "tomato", "onion", "salt", "black pepper", "butter"],
+    "instructions": ["Step 1...", "Step 2..."],
+    "prepTime": 5,
+    "cookTime": 10,
+    "difficulty": "Easy",
+    "cuisine": "International",
+    "note": "Fresh tomato gives a tangy lift."
+  }
+]
