@@ -4,50 +4,37 @@ import { RecipeGrid } from "@/components/RecipeGrid";
 import { RecipeModal } from "@/components/RecipeModal";
 import { Header } from "@/components/Header";
 import { RecipeMatch } from "@/types/recipe";
-import { MOCK_RECIPES } from "@/data/constants";
+import { api } from "@/services/api";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
   const [recommendations, setRecommendations] = useState<RecipeMatch[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<RecipeMatch | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const calculateMatches = () => {
+  const calculateMatches = async () => {
     if (selectedIngredients.length === 0) {
       return;
     }
 
-    const userIngredients = new Set(selectedIngredients.map((i) => i.toLowerCase().trim()));
-
-    const matches: RecipeMatch[] = MOCK_RECIPES.map((recipe) => {
-      const hasIngredients = recipe.ingredients.filter((ingredient) =>
-        userIngredients.has(ingredient.toLowerCase().trim())
-      );
-
-      const missingIngredients = recipe.ingredients.filter(
-        (ingredient) => !userIngredients.has(ingredient.toLowerCase().trim())
-      );
-
-      const matchPercentage = Math.round(
-        (hasIngredients.length / recipe.ingredients.length) * 100
-      );
-
-      return {
-        ...recipe,
-        matchPercentage,
-        missingIngredients,
-        hasIngredients,
-      };
-    });
-
-    const sortedMatches = matches
-      .filter((match) => match.matchPercentage > 0)
-      .sort((a, b) => b.matchPercentage - a.matchPercentage);
-
-    setRecommendations(sortedMatches);
-    setShowResults(true);
+    setLoading(true);
+    try {
+      const matches = await api.matchRecipes(selectedIngredients);
+      setRecommendations(matches);
+      setShowResults(true);
+    } catch (error) {
+      toast({
+        title: "Error finding recipes",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetSearch = () => {
@@ -65,6 +52,12 @@ const Index = () => {
           onIngredientsChange={setSelectedIngredients}
           onSearch={calculateMatches}
         />
+      ) : loading ? (
+        <div className="container mx-auto px-6 py-28 max-w-7xl">
+          <div className="text-center py-16">
+            <p className="text-xl text-muted-foreground">Finding recipes...</p>
+          </div>
+        </div>
       ) : (
         <div className="container mx-auto px-6 py-28 max-w-7xl">
           <div className="mb-12 space-y-6 animate-fade-in">

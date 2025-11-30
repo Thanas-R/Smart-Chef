@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Search, ArrowRight } from "lucide-react";
-import { ALL_INGREDIENTS } from "@/data/constants";
+import { api } from "@/services/api";
+import { toast } from "@/hooks/use-toast";
 
 interface IngredientPickerProps {
   selectedIngredients: string[];
@@ -17,11 +18,31 @@ export const IngredientPicker = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [allIngredients, setAllIngredients] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const fetchIngredients = async () => {
+      try {
+        const ingredients = await api.getIngredients();
+        setAllIngredients(ingredients);
+      } catch (error) {
+        toast({
+          title: "Error loading ingredients",
+          description: "Please try refreshing the page",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchIngredients();
+  }, []);
+
+  useEffect(() => {
     if (inputValue.trim()) {
-      const filtered = ALL_INGREDIENTS.filter(
+      const filtered = allIngredients.filter(
         (ingredient) =>
           ingredient.toLowerCase().includes(inputValue.toLowerCase()) &&
           !selectedIngredients.includes(ingredient)
@@ -31,7 +52,7 @@ export const IngredientPicker = ({
     } else {
       setShowSuggestions(false);
     }
-  }, [inputValue, selectedIngredients]);
+  }, [inputValue, selectedIngredients, allIngredients]);
 
   const addIngredient = (ingredient: string) => {
     if (!selectedIngredients.includes(ingredient)) {
@@ -103,8 +124,9 @@ export const IngredientPicker = ({
               }}
               onKeyDown={handleKeyDown}
               onFocus={() => setShowSuggestions(true)}
-              placeholder="Type an ingredient (e.g., tomato, rice, chicken)..."
-              className="w-full pl-12 pr-4 py-4 bg-secondary/30 border-2 border-transparent rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-foreground placeholder:text-muted-foreground transition-all font-medium"
+              placeholder={loading ? "Loading ingredients..." : "Type an ingredient (e.g., tomato, rice, chicken)..."}
+              disabled={loading}
+              className="w-full pl-12 pr-4 py-4 bg-secondary/30 border-2 border-transparent rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-foreground placeholder:text-muted-foreground transition-all font-medium disabled:opacity-50"
             />
           </div>
           <button
