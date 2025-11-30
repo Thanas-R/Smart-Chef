@@ -105,9 +105,7 @@ export const RecipeModal = ({
               </div>}
 
             {/* Description */}
-            {displayRecipe.description && <div className="bg-muted/30 p-4 rounded-2xl border border-border">
-                
-              </div>}
+            {displayRecipe.description}
 
             {/* Meta info */}
             <div className="flex flex-wrap gap-3 items-center pb-6 border-b border-border">
