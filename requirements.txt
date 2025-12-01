@@ -1,5 +1,6 @@
 fastapi
 uvicorn
 sentence-transformers
+torch
 numpy
 pydantic
