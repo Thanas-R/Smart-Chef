@@ -45,8 +45,36 @@ export const api = {
       throw new Error(`Failed to match recipes: ${res.statusText}`);
     }
     const data: RecipeMatchResponse = await res.json();
-    // Filter out recipes with 0% match (backend workaround)
-    return data.matches.filter(recipe => recipe.matchPercentage > 0);
+    
+    // Filter out recipes with 0% match and calculate hasIngredients/missingIngredients
+    return data.matches
+      .filter(recipe => recipe.matchPercentage > 0)
+      .map(recipe => {
+        const recipeIngredients = recipe.ingredients || [];
+        const userIngredients = ingredients.map(i => i.toLowerCase());
+        
+        // Calculate which ingredients the user has
+        const hasIngredients = recipeIngredients.filter(ingredient => 
+          userIngredients.some(userIng => 
+            ingredient.toLowerCase().includes(userIng) || 
+            userIng.includes(ingredient.toLowerCase())
+          )
+        );
+        
+        // Calculate which ingredients are missing
+        const missingIngredients = recipeIngredients.filter(ingredient => 
+          !userIngredients.some(userIng => 
+            ingredient.toLowerCase().includes(userIng) || 
+            userIng.includes(ingredient.toLowerCase())
+          )
+        );
+        
+        return {
+          ...recipe,
+          hasIngredients,
+          missingIngredients
+        };
+      });
   },
 
   async generateInstructions(recipeId: string, recipeName: string, ingredients: string[]): Promise<string[]> {
