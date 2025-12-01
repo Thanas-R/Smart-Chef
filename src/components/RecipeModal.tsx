@@ -28,14 +28,12 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
 
   useEffect(() => {
     if (recipe && isOpen) {
-      // Reset local recipe when a new recipe is opened
       setLocalRecipe(recipe);
-      // Auto-generate details if missing
+
       if (!recipe.description || !recipe.instructions || recipe.instructions.length === 0) {
         handleGenerateDetails();
       }
     } else if (!isOpen) {
-      // Reset when modal closes
       setLocalRecipe(null);
     }
   }, [recipe?.id, isOpen]);
@@ -43,21 +41,28 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
   if (!recipe) return null;
 
   const displayRecipe = localRecipe || recipe;
-  const hasInstructions = displayRecipe.instructions && displayRecipe.instructions.length > 0;
+
+  const hasInstructions =
+    displayRecipe.instructions && displayRecipe.instructions.length > 0;
+
   const hasIngredients = displayRecipe.hasIngredients || [];
   const ingredients = displayRecipe.ingredients || [];
+
   const prepTime = displayRecipe.prepTime || 0;
   const cookTime = displayRecipe.cookTime || 0;
 
   const handleGenerateDetails = async () => {
     setIsGeneratingDetails(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-recipe-details', {
-        body: {
-          recipeName: displayRecipe.title,
-          ingredients: displayRecipe.ingredients
+      const { data, error } = await supabase.functions.invoke(
+        "generate-recipe-details",
+        {
+          body: {
+            recipeName: displayRecipe.title,
+            ingredients: displayRecipe.ingredients,
+          },
         }
-      });
+      );
 
       if (error) throw error;
 
@@ -71,9 +76,8 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
         difficulty: data.difficulty || displayRecipe.difficulty,
         instructions: data.instructions || [],
         equipment: data.equipment || [],
-        chef_tips: data.chef_tips || []
+        chef_tips: data.chef_tips || [],
       });
-
     } catch (error) {
       console.error("Failed to generate recipe details:", error);
       toast({
@@ -94,9 +98,9 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
         displayRecipe.title,
         displayRecipe.ingredients
       );
-      
+
       setLocalRecipe({ ...displayRecipe, instructions });
-      
+
       toast({
         title: "Instructions generated!",
         description: "AI-powered cooking steps are ready.",
@@ -116,14 +120,19 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] bg-card border-2 border-border rounded-3xl">
         <DialogHeader>
-          <DialogTitle className="text-4xl font-serif font-bold pr-8 text-foreground">{recipe.title}</DialogTitle>
+          <DialogTitle className="text-4xl font-serif font-bold pr-8 text-foreground">
+            {displayRecipe.title}
+          </DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="h-[75vh] pr-4">
           <div className="space-y-8">
-            {/* Ingredients - Always show first */}
+            {/* INGREDIENTS */}
             <div>
-              <h3 className="text-2xl font-serif font-bold mb-5 text-foreground">Ingredients</h3>
+              <h3 className="text-2xl font-serif font-bold mb-5 text-foreground">
+                Ingredients
+              </h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {ingredients.map((ingredient, idx) => {
                   const hasIngredient = hasIngredients.includes(ingredient);
@@ -137,13 +146,18 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
                       }`}
                     >
                       {hasIngredient ? (
-                        <Check className="w-5 h-5 text-success flex-shrink-0" />
+                        <Check className="w-5 h-5 text-success" />
                       ) : (
-                        <X className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                        <X className="w-5 h-5 text-muted-foreground" />
                       )}
-                      <span className={`text-sm font-semibold ${
-                        hasIngredient ? "text-foreground" : "text-muted-foreground"
-                      }`}>
+
+                      <span
+                        className={`text-sm font-semibold ${
+                          hasIngredient
+                            ? "text-foreground"
+                            : "text-muted-foreground"
+                        }`}
+                      >
                         {ingredient}
                       </span>
                     </div>
@@ -152,24 +166,25 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
               </div>
             </div>
 
-            {/* Loading animation while generating */}
+            {/* LOADING DETAILS */}
             {isGeneratingDetails && (
               <div className="flex items-center justify-center py-8 bg-primary/5 rounded-2xl">
                 <GooeyLoader message="Generating recipe details with AI..." />
               </div>
             )}
 
-            {/* Show details only after generation completes */}
+            {/* DESCRIPTION */}
             {!isGeneratingDetails && displayRecipe.description && (
               <>
-                {/* Description */}
                 <div className="bg-muted/30 p-4 rounded-2xl border border-border">
-                  <p className="text-foreground/80 leading-relaxed">{displayRecipe.description}</p>
+                  <p className="text-foreground/80 leading-relaxed">
+                    {displayRecipe.description}
+                  </p>
                 </div>
 
-                {/* Meta info */}
+                {/* META INFO */}
                 <div className="flex flex-wrap gap-3 items-center pb-6 border-b border-border">
-                <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
+                  <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
                     <Clock className="w-4 h-4 text-primary" />
                     <div className="text-sm font-semibold text-foreground">
                       <span>Prep:</span> {prepTime}m
@@ -177,100 +192,135 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
                       <span>Cook:</span> {cookTime}m
                     </div>
                   </div>
+
                   {displayRecipe.difficulty && (
                     <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
                       <ChefHat className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-semibold text-foreground">{displayRecipe.difficulty}</span>
+                      <span className="text-sm font-semibold text-foreground">
+                        {displayRecipe.difficulty}
+                      </span>
                     </div>
                   )}
+
                   {displayRecipe.cuisine && (
                     <div className="bg-secondary/50 px-4 py-2 rounded-full">
-                      <span className="text-sm font-semibold text-foreground">{displayRecipe.cuisine}</span>
+                      <span className="text-sm font-semibold text-foreground">
+                        {displayRecipe.cuisine}
+                      </span>
                     </div>
                   )}
+
                   {displayRecipe.servings && (
                     <div className="bg-secondary/50 px-4 py-2 rounded-full">
-                      <span className="text-sm font-semibold text-foreground">Serves {displayRecipe.servings}</span>
+                      <span className="text-sm font-semibold text-foreground">
+                        Serves {displayRecipe.servings}
+                      </span>
                     </div>
                   )}
-                  <MatchBadge percentage={recipe.matchPercentage} />
+
+                  {/* FIXED → use displayRecipe.matchPercentage */}
+                  <MatchBadge percentage={displayRecipe.matchPercentage} />
                 </div>
               </>
             )}
 
-            {/* Equipment - Only show after generation */}
-            {!isGeneratingDetails && displayRecipe.equipment && displayRecipe.equipment.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Utensils className="w-5 h-5 text-primary" />
-                  <h3 className="text-2xl font-serif font-bold text-foreground">Equipment Needed</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {displayRecipe.equipment.map((item, idx) => (
-                    <div key={idx} className="bg-secondary/50 px-4 py-2 rounded-full border border-border">
-                      <span className="text-sm font-medium text-foreground">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* EQUIPMENT */}
+            {!isGeneratingDetails &&
+              displayRecipe.equipment &&
+              displayRecipe.equipment.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Utensils className="w-5 h-5 text-primary" />
+                    <h3 className="text-2xl font-serif font-bold text-foreground">
+                      Equipment Needed
+                    </h3>
+                  </div>
 
-            {/* Instructions - Only show after generation */}
-            {!isGeneratingDetails && (
-            <div>
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-2xl font-serif font-bold text-foreground">Instructions</h3>
-                {!hasInstructions && !isGeneratingDetails && (
-                  <Button
-                    onClick={handleGenerateInstructions}
-                    disabled={isGenerating}
-                    className="gap-2"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    {isGenerating ? "Generating..." : "Generate Instructions"}
-                  </Button>
-                )}
-              </div>
-              {hasInstructions ? (
-                <div className="space-y-5">
-                  {(displayRecipe.instructions || []).map((instruction, idx) => (
-                    <div key={idx} className="flex gap-4 group">
-                      <span className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-base font-bold shadow-md">
-                        {idx + 1}
-                      </span>
-                      <p className="text-sm text-foreground/80 pt-2 leading-relaxed flex-1 font-medium">
-                        {instruction}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : !isGeneratingDetails && (
-                <div className="text-center py-8 bg-muted/30 rounded-2xl border-2 border-dashed border-border">
-                  <p className="text-muted-foreground">
-                    No instructions yet. Click "Generate Instructions" to create them with AI.
-                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {displayRecipe.equipment.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-secondary/50 px-4 py-2 rounded-full border border-border"
+                      >
+                        <span className="text-sm font-medium text-foreground">
+                          {item}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
-            </div>
-            )}
 
-            {/* Chef Tips - Only show after generation */}
-            {!isGeneratingDetails && displayRecipe.chef_tips && displayRecipe.chef_tips.length > 0 && (
+            {/* INSTRUCTIONS */}
+            {!isGeneratingDetails && (
               <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Lightbulb className="w-5 h-5 text-primary" />
-                  <h3 className="text-2xl font-serif font-bold text-foreground">Chef's Tips</h3>
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-2xl font-serif font-bold text-foreground">
+                    Instructions
+                  </h3>
+
+                  {!hasInstructions && !isGeneratingDetails && (
+                    <Button
+                      onClick={handleGenerateInstructions}
+                      disabled={isGenerating}
+                      className="gap-2"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      {isGenerating ? "Generating..." : "Generate Instructions"}
+                    </Button>
+                  )}
                 </div>
-                <div className="space-y-3">
-                  {displayRecipe.chef_tips.map((tip, idx) => (
-                    <div key={idx} className="flex gap-3 p-4 bg-primary/5 rounded-xl border border-primary/20">
-                      <span className="text-primary font-bold">💡</span>
-                      <p className="text-sm text-foreground/80 leading-relaxed">{tip}</p>
-                    </div>
-                  ))}
-                </div>
+
+                {hasInstructions ? (
+                  <div className="space-y-5">
+                    {displayRecipe.instructions.map((instruction, idx) => (
+                      <div key={idx} className="flex gap-4 group">
+                        <span className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-base font-bold shadow-md">
+                          {idx + 1}
+                        </span>
+                        <p className="text-sm text-foreground/80 pt-2 leading-relaxed font-medium">
+                          {instruction}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-muted/30 rounded-2xl border-2 border-dashed border-border">
+                    <p className="text-muted-foreground">
+                      No instructions yet. Click “Generate Instructions”.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
+
+            {/* CHEF TIPS */}
+            {!isGeneratingDetails &&
+              displayRecipe.chef_tips &&
+              displayRecipe.chef_tips.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Lightbulb className="w-5 h-5 text-primary" />
+                    <h3 className="text-2xl font-serif font-bold text-foreground">
+                      Chef's Tips
+                    </h3>
+                  </div>
+
+                  <div className="space-y-3">
+                    {displayRecipe.chef_tips.map((tip, idx) => (
+                      <div
+                        key={idx}
+                        className="flex gap-3 p-4 bg-primary/5 rounded-xl border border-primary/20"
+                      >
+                        <span className="text-primary font-bold">💡</span>
+                        <p className="text-sm text-foreground/80 leading-relaxed">
+                          {tip}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
           </div>
         </ScrollArea>
       </DialogContent>
