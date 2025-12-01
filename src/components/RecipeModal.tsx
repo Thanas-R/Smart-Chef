@@ -1,4 +1,3 @@
-// RecipeModal.tsx
 import { useState, useEffect } from "react";
 import { RecipeMatch } from "@/types/recipe";
 import { MatchBadge } from "./MatchBadge";
@@ -27,15 +26,6 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingDetails, setIsGeneratingDetails] = useState(false);
 
-  // Normalize function reused
-  const normalizePct = (p: any) => {
-    if (p === null || p === undefined) return 0;
-    const n = Number(p);
-    if (Number.isNaN(n)) return 0;
-    const scaled = n <= 1 ? Math.round(n * 100) : Math.round(n);
-    return Math.min(100, Math.max(0, scaled));
-  };
-
   useEffect(() => {
     if (recipe && isOpen) {
       // Reset local recipe when a new recipe is opened
@@ -48,7 +38,6 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
       // Reset when modal closes
       setLocalRecipe(null);
     }
-    // intentionally depend on id and open only
   }, [recipe?.id, isOpen]);
 
   if (!recipe) return null;
@@ -60,17 +49,14 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
   const prepTime = displayRecipe.prepTime || 0;
   const cookTime = displayRecipe.cookTime || 0;
 
-  // normalized percentage to pass into MatchBadge
-  const normalizedPct = normalizePct(displayRecipe.matchPercentage);
-
   const handleGenerateDetails = async () => {
     setIsGeneratingDetails(true);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-recipe-details", {
+      const { data, error } = await supabase.functions.invoke('generate-recipe-details', {
         body: {
           recipeName: displayRecipe.title,
-          ingredients: displayRecipe.ingredients,
-        },
+          ingredients: displayRecipe.ingredients
+        }
       });
 
       if (error) throw error;
@@ -85,10 +71,9 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
         difficulty: data.difficulty || displayRecipe.difficulty,
         instructions: data.instructions || [],
         equipment: data.equipment || [],
-        chef_tips: data.chef_tips || [],
-        // preserve matchPercentage
-        matchPercentage: displayRecipe.matchPercentage,
+        chef_tips: data.chef_tips || []
       });
+
     } catch (error) {
       console.error("Failed to generate recipe details:", error);
       toast({
@@ -109,13 +94,9 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
         displayRecipe.title,
         displayRecipe.ingredients
       );
-
-      setLocalRecipe({
-        ...displayRecipe,
-        instructions,
-        matchPercentage: displayRecipe.matchPercentage, // preserve
-      });
-
+      
+      setLocalRecipe({ ...displayRecipe, instructions });
+      
       toast({
         title: "Instructions generated!",
         description: "AI-powered cooking steps are ready.",
@@ -135,9 +116,7 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] bg-card border-2 border-border rounded-3xl">
         <DialogHeader>
-          <DialogTitle className="text-4xl font-serif font-bold pr-8 text-foreground">
-            {displayRecipe.title || displayRecipe.name}
-          </DialogTitle>
+          <DialogTitle className="text-4xl font-serif font-bold pr-8 text-foreground">{recipe.title}</DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="h-[75vh] pr-4">
@@ -152,7 +131,9 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
                     <div
                       key={`${ingredient}-${idx}`}
                       className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-colors ${
-                        hasIngredient ? "bg-success/5 border-success/30" : "bg-muted/30 border-border"
+                        hasIngredient
+                          ? "bg-success/5 border-success/30"
+                          : "bg-muted/30 border-border"
                       }`}
                     >
                       {hasIngredient ? (
@@ -160,9 +141,9 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
                       ) : (
                         <X className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                       )}
-                      <span
-                        className={`text-sm font-semibold ${hasIngredient ? "text-foreground" : "text-muted-foreground"}`}
-                      >
+                      <span className={`text-sm font-semibold ${
+                        hasIngredient ? "text-foreground" : "text-muted-foreground"
+                      }`}>
                         {ingredient}
                       </span>
                     </div>
@@ -188,7 +169,7 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
 
                 {/* Meta info */}
                 <div className="flex flex-wrap gap-3 items-center pb-6 border-b border-border">
-                  <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
+                <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
                     <Clock className="w-4 h-4 text-primary" />
                     <div className="text-sm font-semibold text-foreground">
                       <span>Prep:</span> {prepTime}m
@@ -212,13 +193,12 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
                       <span className="text-sm font-semibold text-foreground">Serves {displayRecipe.servings}</span>
                     </div>
                   )}
-
-                  <MatchBadge percentage={normalizedPct} />
+                  <MatchBadge percentage={recipe.matchPercentage} />
                 </div>
               </>
             )}
 
-            {/* Equipment */}
+            {/* Equipment - Only show after generation */}
             {!isGeneratingDetails && displayRecipe.equipment && displayRecipe.equipment.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-4">
@@ -235,44 +215,46 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
               </div>
             )}
 
-            {/* Instructions */}
+            {/* Instructions - Only show after generation */}
             {!isGeneratingDetails && (
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <h3 className="text-2xl font-serif font-bold text-foreground">Instructions</h3>
-                  {!hasInstructions && !isGeneratingDetails && (
-                    <Button onClick={handleGenerateInstructions} disabled={isGenerating} className="gap-2">
-                      <Sparkles className="w-4 h-4" />
-                      {isGenerating ? "Generating..." : "Generate Instructions"}
-                    </Button>
-                  )}
-                </div>
-                {hasInstructions ? (
-                  <div className="space-y-5">
-                    {(displayRecipe.instructions || []).map((instruction, idx) => (
-                      <div key={idx} className="flex gap-4 group">
-                        <span className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-base font-bold shadow-md">
-                          {idx + 1}
-                        </span>
-                        <p className="text-sm text-foreground/80 pt-2 leading-relaxed flex-1 font-medium">
-                          {instruction}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  !isGeneratingDetails && (
-                    <div className="text-center py-8 bg-muted/30 rounded-2xl border-2 border-dashed border-border">
-                      <p className="text-muted-foreground">
-                        No instructions yet. Click "Generate Instructions" to create them with AI.
-                      </p>
-                    </div>
-                  )
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-2xl font-serif font-bold text-foreground">Instructions</h3>
+                {!hasInstructions && !isGeneratingDetails && (
+                  <Button
+                    onClick={handleGenerateInstructions}
+                    disabled={isGenerating}
+                    className="gap-2"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    {isGenerating ? "Generating..." : "Generate Instructions"}
+                  </Button>
                 )}
               </div>
+              {hasInstructions ? (
+                <div className="space-y-5">
+                  {(displayRecipe.instructions || []).map((instruction, idx) => (
+                    <div key={idx} className="flex gap-4 group">
+                      <span className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-base font-bold shadow-md">
+                        {idx + 1}
+                      </span>
+                      <p className="text-sm text-foreground/80 pt-2 leading-relaxed flex-1 font-medium">
+                        {instruction}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : !isGeneratingDetails && (
+                <div className="text-center py-8 bg-muted/30 rounded-2xl border-2 border-dashed border-border">
+                  <p className="text-muted-foreground">
+                    No instructions yet. Click "Generate Instructions" to create them with AI.
+                  </p>
+                </div>
+              )}
+            </div>
             )}
 
-            {/* Chef Tips */}
+            {/* Chef Tips - Only show after generation */}
             {!isGeneratingDetails && displayRecipe.chef_tips && displayRecipe.chef_tips.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-4">
