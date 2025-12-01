@@ -11,7 +11,9 @@ import math
 # ------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
+
 RECIPES_PATH = os.path.join(DATA_DIR, "recipes.json")
+INGREDIENTS_PATH = os.path.join(DATA_DIR, "ingredients.json")
 
 # ------------------------
 # FASTAPI APP
@@ -27,6 +29,24 @@ app.add_middleware(
 )
 
 # ------------------------
+# LOAD INGREDIENTS
+# ------------------------
+def load_ingredients():
+    if not os.path.exists(INGREDIENTS_PATH):
+        print("❌ ingredients.json NOT FOUND at:", INGREDIENTS_PATH)
+        return []
+
+    with open(INGREDIENTS_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Accept both list and { "ingredients": [...] }
+    if isinstance(data, dict):
+        return data.get("ingredients", [])
+
+    return data
+
+
+# ------------------------
 # LOAD RECIPES
 # ------------------------
 def load_recipes():
@@ -37,11 +57,9 @@ def load_recipes():
     with open(RECIPES_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # Handle both list + { "recipes": [...] }
     if isinstance(data, dict):
         data = data.get("recipes", [])
 
-    # Normalize IDs + fields
     for r in data:
         if "id" not in r:
             r["id"] = str(uuid.uuid4())
@@ -55,6 +73,7 @@ def load_recipes():
     return data
 
 
+INGREDIENTS = load_ingredients()
 RECIPES = load_recipes()
 
 # ------------------------------------------------------------
@@ -110,6 +129,11 @@ def list_recipes():
     return {"recipes": RECIPES}
 
 
+@app.get("/api/ingredients")
+def list_ingredients():
+    return {"ingredients": INGREDIENTS}
+
+
 @app.post("/api/recipes/match")
 def match_recipes(req: MatchRequest):
 
@@ -124,7 +148,7 @@ def match_recipes(req: MatchRequest):
     for r in RECIPES:
         score = cosine_similarity(user_vec, r["vec"])
 
-        if score > 0.05:  # threshold for relevance
+        if score > 0.05:
             results.append({
                 "id": r["id"],
                 "title": r.get("title"),
