@@ -45,7 +45,8 @@ export const api = {
       throw new Error(`Failed to match recipes: ${res.statusText}`);
     }
     const data: RecipeMatchResponse = await res.json();
-    return data.matches;
+    // Filter out recipes with 0% match (backend workaround)
+    return data.matches.filter(recipe => recipe.matchPercentage > 0);
   },
 
   async generateInstructions(recipeId: string, recipeName: string, ingredients: string[]): Promise<string[]> {
