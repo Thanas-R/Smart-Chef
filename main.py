@@ -1,56 +1,91 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import os
 import json
+import uuid
 import math
 
+# ------------------------
+# PATHS
+# ------------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RECIPES_PATH = os.path.join(BASE_DIR, "recipes.json")
+
+# ------------------------
+# FASTAPI APP
+# ------------------------
 app = FastAPI()
 
-# Allow frontend to call backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ----------------------------
-# Load recipes.json
-# ----------------------------
-with open("recipes.json", "r") as f:
-    recipes = json.load(f)
+# ------------------------
+# LOAD RECIPES
+# ------------------------
+def load_recipes():
+    if not os.path.exists(RECIPES_PATH):
+        return []
 
-# --------------------------------------------
-# SIMPLE VECTOR EMBEDDING (PURE PYTHON)
-# --------------------------------------------
+    with open(RECIPES_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
 
-def build_vocab(recipes):
-    """Create a vocabulary of all unique ingredients"""
-    vocab = {}
-    idx = 0
-    for r in recipes:
-        for ing in r["ingredients"]:
-            ing = ing.lower().strip()
-            if ing not in vocab:
-                vocab[ing] = idx
-                idx += 1
-    return vocab
+    # Handle both list + { "recipes": [...] }
+    if isinstance(data, dict):
+        data = data.get("recipes", [])
 
+    # Normalize IDs + fields
+    for r in data:
+        if "id" not in r:
+            r["id"] = str(uuid.uuid4())
+        if "ingredients" not in r:
+            r["ingredients"] = []
+        if "instructions" not in r:
+            r["instructions"] = []
+        if "name" in r and "title" not in r:
+            r["title"] = r["name"]
 
-def vectorize(ingredients, vocab):
-    """Turn ingredient list into a vector of 0s and 1s"""
-    vector = [0] * len(vocab)
-    for ing in ingredients:
-        ing = ing.lower().strip()
-        if ing in vocab:
-            vector[vocab[ing]] = 1
-    return vector
+    return data
 
 
-def cosine_similarity(v1, v2):
-    """Compute cosine similarity between two vectors"""
-    dot = sum(a * b for a, b in zip(v1, v2))
-    mag1 = math.sqrt(sum(a * a for a in v1))
-    mag2 = math.sqrt(sum(b * b for b in v2))
+RECIPES = load_recipes()
+
+# ------------------------------------------------------------
+# SIMPLE VECTOR EMBEDDING (PURE PYTHON — NO TORCH, NO SKLEARN)
+# ------------------------------------------------------------
+
+def text_to_vector(text: str):
+    """
+    Very lightweight vectorizer:
+    Convert text → bag-of-words frequency dict.
+    Example output:
+    {"egg": 2, "milk": 1, "salt": 1}
+    """
+    words = text.lower().replace(",", " ").split()
+    vec = {}
+    for w in words:
+        vec[w] = vec.get(w, 0) + 1
+    return vec
+
+
+def cosine_similarity(vec1: dict, vec2: dict):
+    """
+    Compute cosine similarity between bag-of-words vectors.
+    """
+    # dot product
+    dot = 0
+    for w in vec1:
+        if w in vec2:
+            dot += vec1[w] * vec2[w]
+
+    # magnitudes
+    mag1 = math.sqrt(sum(v * v for v in vec1.values()))
+    mag2 = math.sqrt(sum(v * v for v in vec2.values()))
 
     if mag1 == 0 or mag2 == 0:
         return 0.0
@@ -58,43 +93,58 @@ def cosine_similarity(v1, v2):
     return dot / (mag1 * mag2)
 
 
-# --------------------------------------------
-# Build the vocabulary and recipe vectors at startup
-# --------------------------------------------
-vocab = build_vocab(recipes)
-recipe_vectors = [vectorize(r["ingredients"], vocab) for r in recipes]
+# Precompute recipe vectors
+for r in RECIPES:
+    ingredient_text = " ".join(r["ingredients"])
+    r["vec"] = text_to_vector(ingredient_text)
 
 
-# --------------------------------------------
-# ROUTES
-# --------------------------------------------
+# ------------------------
+# MODELS
+# ------------------------
+class MatchRequest(BaseModel):
+    ingredients: list[str]
 
+
+# ------------------------
+# API ROUTES
+# ------------------------
 @app.get("/")
-def home():
-    return {"status": "SmartChef backend running successfully!"}
+def root():
+    return {"status": "SmartChef backend running"}
 
 
-@app.get("/match")
-def match(ingredients: str):
-    """
-    Example call: /match?ingredients=egg,tomato,bread
-    """
-    user_ings = [i.strip().lower() for i in ingredients.split(",")]
-    user_vec = vectorize(user_ings, vocab)
+@app.get("/api/recipes")
+def list_recipes():
+    return {"recipes": RECIPES}
 
-    # Compare similarity with every recipe
+
+@app.post("/api/recipes/match")
+def match_recipes(req: MatchRequest):
+
+    user_ingredients = " ".join([i.lower().strip() for i in req.ingredients])
+    if not user_ingredients:
+        return {"matches": []}
+
+    user_vec = text_to_vector(user_ingredients)
+
     results = []
-    for recipe, rec_vec in zip(recipes, recipe_vectors):
-        score = cosine_similarity(user_vec, rec_vec)
 
-        results.append({
-            "name": recipe["name"],
-            "note": recipe.get("note", ""),
-            "ingredients": recipe["ingredients"],
-            "score": round(score * 100, 2)  # convert to %
-        })
+    for r in RECIPES:
+        score = cosine_similarity(user_vec, r["vec"])
 
-    # Sort from highest match to lowest
-    results = sorted(results, key=lambda r: r["score"], reverse=True)
+        if score > 0.05:  # threshold for relevance
+            results.append({
+                "id": r["id"],
+                "title": r.get("title"),
+                "name": r.get("title"),
+                "note": r.get("note", ""),
+                "ingredients": r.get("ingredients", []),
+                "instructions": r.get("instructions", []),
+                "matchPercentage": int(score * 100)
+            })
 
-    return results[:5]   # Top 5 results
+    # Sort highest match first
+    results.sort(key=lambda x: x["matchPercentage"], reverse=True)
+
+    return {"matches": results}
