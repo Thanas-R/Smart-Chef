@@ -9,7 +9,10 @@ export const RecipeCard = ({
   recipe,
   onClick
 }: RecipeCardProps) => {
-  const totalTime = recipe.prepTime + recipe.cookTime;
+  const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
+  const hasIngredients = recipe.hasIngredients || [];
+  const missingIngredients = recipe.missingIngredients || [];
+  const ingredients = recipe.ingredients || [];
   return <button onClick={onClick} className="group bg-card border-2 border-border rounded-3xl p-6 hover:border-primary hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1 text-left w-full animate-slide-up">
       {/* Title */}
       <div className="flex items-start justify-between gap-3 mb-4">
@@ -31,15 +34,15 @@ export const RecipeCard = ({
           }} />
           </div>
           <span className="text-xs font-semibold text-muted-foreground">
-            {recipe.hasIngredients.length}/{recipe.ingredients.length}
+            {hasIngredients.length}/{ingredients.length}
           </span>
         </div>
         
-        {recipe.missingIngredients.length > 0 && <div className="bg-primary/5 border border-primary/20 rounded-2xl p-3">
+        {missingIngredients.length > 0 && <div className="bg-primary/5 border border-primary/20 rounded-2xl p-3">
             <p className="text-xs font-semibold text-primary mb-1">Missing:</p>
             <p className="text-xs text-foreground/70">
-              {recipe.missingIngredients.slice(0, 3).join(", ")}
-              {recipe.missingIngredients.length > 3 && ` +${recipe.missingIngredients.length - 3}`}
+              {missingIngredients.slice(0, 3).join(", ")}
+              {missingIngredients.length > 3 && ` +${missingIngredients.length - 3}`}
             </p>
           </div>}
       </div>

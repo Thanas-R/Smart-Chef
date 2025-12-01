@@ -1,11 +1,12 @@
 export interface Recipe {
   id: string;
   title: string;
+  name?: string;
   ingredients: string[];
-  instructions: string[];
-  prepTime: number;
-  cookTime: number;
-  difficulty: "Easy" | "Medium" | "Hard";
+  instructions?: string[];
+  prepTime?: number;
+  cookTime?: number;
+  difficulty?: "Easy" | "Medium" | "Hard";
   cuisine?: string;
   note?: string;
   description?: string;
@@ -16,6 +17,6 @@ export interface Recipe {
 
 export interface RecipeMatch extends Recipe {
   matchPercentage: number;
-  missingIngredients: string[];
-  hasIngredients: string[];
+  missingIngredients?: string[];
+  hasIngredients?: string[];
 }
