@@ -1,12 +1,21 @@
+// MatchBadge.tsx
 interface MatchBadgeProps {
-  percentage: number;
+  percentage: number | undefined | null;
 }
 
 export const MatchBadge = ({ percentage }: MatchBadgeProps) => {
-  // Convert decimal (0.14) → whole number (14)
-  const displayPercentage = Math.round(percentage);
+  // Normalize to integer 0-100
+  const toPct = (p: any) => {
+    if (p === null || p === undefined) return 0;
+    const n = Number(p);
+    if (Number.isNaN(n)) return 0;
+    // If the backend accidentally sent 0-1 float, scale it
+    const scaled = n <= 1 ? Math.round(n * 100) : Math.round(n);
+    return Math.min(100, Math.max(0, scaled));
+  };
 
-  const isHighMatch = displayPercentage >= 80;
+  const pct = toPct(percentage);
+  const isHighMatch = pct >= 80;
 
   return (
     <div
@@ -15,8 +24,10 @@ export const MatchBadge = ({ percentage }: MatchBadgeProps) => {
           ? "bg-success/10 text-success border-2 border-success/20"
           : "bg-primary/10 text-primary border-2 border-primary/20"
       }`}
+      aria-label={`Match ${pct} percent`}
+      title={`${pct}% match`}
     >
-      {displayPercentage}% Match
+      {pct}% Match
     </div>
   );
 };
