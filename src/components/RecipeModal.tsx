@@ -13,6 +13,7 @@ import { Button } from "./ui/button";
 import { api } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { WaveLoader } from "./ui/wave-loader";
 
 interface RecipeModalProps {
   recipe: RecipeMatch | null;
@@ -27,13 +28,17 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
 
   useEffect(() => {
     if (recipe && isOpen) {
+      // Reset local recipe when a new recipe is opened
       setLocalRecipe(recipe);
       // Auto-generate details if missing
       if (!recipe.description || !recipe.instructions || recipe.instructions.length === 0) {
         handleGenerateDetails();
       }
+    } else if (!isOpen) {
+      // Reset when modal closes
+      setLocalRecipe(null);
     }
-  }, [recipe, isOpen]);
+  }, [recipe?.id, isOpen]);
 
   if (!recipe) return null;
 
@@ -112,48 +117,7 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
 
         <ScrollArea className="h-[75vh] pr-4">
           <div className="space-y-8">
-            {isGeneratingDetails && (
-              <div className="flex items-center justify-center py-8 bg-primary/5 rounded-2xl">
-                <Sparkles className="w-5 h-5 text-primary animate-pulse mr-2" />
-                <p className="text-foreground font-medium">Generating recipe details with AI...</p>
-              </div>
-            )}
-
-            {/* Description */}
-            {displayRecipe.description && (
-              <div className="bg-muted/30 p-4 rounded-2xl border border-border">
-                <p className="text-foreground/80 leading-relaxed">{displayRecipe.description}</p>
-              </div>
-            )}
-
-            {/* Meta info */}
-            <div className="flex flex-wrap gap-3 items-center pb-6 border-b border-border">
-              <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
-                <Clock className="w-4 h-4 text-primary" />
-                <div className="text-sm font-semibold text-foreground">
-                  <span>Prep:</span> {displayRecipe.prepTime}m
-                  <span className="mx-2">•</span>
-                  <span>Cook:</span> {displayRecipe.cookTime}m
-                </div>
-              </div>
-              <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
-                <ChefHat className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-foreground">{displayRecipe.difficulty}</span>
-              </div>
-              {displayRecipe.cuisine && (
-                <div className="bg-secondary/50 px-4 py-2 rounded-full">
-                  <span className="text-sm font-semibold text-foreground">{displayRecipe.cuisine}</span>
-                </div>
-              )}
-              {displayRecipe.servings && (
-                <div className="bg-secondary/50 px-4 py-2 rounded-full">
-                  <span className="text-sm font-semibold text-foreground">Serves {displayRecipe.servings}</span>
-                </div>
-              )}
-              <MatchBadge percentage={recipe.matchPercentage} />
-            </div>
-
-            {/* Ingredients */}
+            {/* Ingredients - Always show first */}
             <div>
               <h3 className="text-2xl font-serif font-bold mb-5 text-foreground">Ingredients</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -184,8 +148,52 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
               </div>
             </div>
 
-            {/* Equipment */}
-            {displayRecipe.equipment && displayRecipe.equipment.length > 0 && (
+            {/* Loading animation while generating */}
+            {isGeneratingDetails && (
+              <div className="flex items-center justify-center py-8 bg-primary/5 rounded-2xl">
+                <WaveLoader bars={5} message="Generating recipe details with AI..." messagePlacement="right" />
+              </div>
+            )}
+
+            {/* Show details only after generation completes */}
+            {!isGeneratingDetails && displayRecipe.description && (
+              <>
+                {/* Description */}
+                <div className="bg-muted/30 p-4 rounded-2xl border border-border">
+                  <p className="text-foreground/80 leading-relaxed">{displayRecipe.description}</p>
+                </div>
+
+                {/* Meta info */}
+                <div className="flex flex-wrap gap-3 items-center pb-6 border-b border-border">
+                  <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <div className="text-sm font-semibold text-foreground">
+                      <span>Prep:</span> {displayRecipe.prepTime}m
+                      <span className="mx-2">•</span>
+                      <span>Cook:</span> {displayRecipe.cookTime}m
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
+                    <ChefHat className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-foreground">{displayRecipe.difficulty}</span>
+                  </div>
+                  {displayRecipe.cuisine && (
+                    <div className="bg-secondary/50 px-4 py-2 rounded-full">
+                      <span className="text-sm font-semibold text-foreground">{displayRecipe.cuisine}</span>
+                    </div>
+                  )}
+                  {displayRecipe.servings && (
+                    <div className="bg-secondary/50 px-4 py-2 rounded-full">
+                      <span className="text-sm font-semibold text-foreground">Serves {displayRecipe.servings}</span>
+                    </div>
+                  )}
+                  <MatchBadge percentage={recipe.matchPercentage} />
+                </div>
+              </>
+            )}
+
+            {/* Equipment - Only show after generation */}
+            {!isGeneratingDetails && displayRecipe.equipment && displayRecipe.equipment.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <Utensils className="w-5 h-5 text-primary" />
@@ -201,7 +209,8 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
               </div>
             )}
 
-            {/* Instructions */}
+            {/* Instructions - Only show after generation */}
+            {!isGeneratingDetails && (
             <div>
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-2xl font-serif font-bold text-foreground">Instructions</h3>
@@ -237,9 +246,10 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
                 </div>
               )}
             </div>
+            )}
 
-            {/* Chef Tips */}
-            {displayRecipe.chef_tips && displayRecipe.chef_tips.length > 0 && (
+            {/* Chef Tips - Only show after generation */}
+            {!isGeneratingDetails && displayRecipe.chef_tips && displayRecipe.chef_tips.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <Lightbulb className="w-5 h-5 text-primary" />
