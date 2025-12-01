@@ -13,7 +13,7 @@ import { Button } from "./ui/button";
 import { api } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { WaveLoader } from "./ui/wave-loader";
+import { GooeyLoader } from "./ui/gooey-loader";
 
 interface RecipeModalProps {
   recipe: RecipeMatch | null;
@@ -44,6 +44,10 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
 
   const displayRecipe = localRecipe || recipe;
   const hasInstructions = displayRecipe.instructions && displayRecipe.instructions.length > 0;
+  const hasIngredients = displayRecipe.hasIngredients || [];
+  const ingredients = displayRecipe.ingredients || [];
+  const prepTime = displayRecipe.prepTime || 0;
+  const cookTime = displayRecipe.cookTime || 0;
 
   const handleGenerateDetails = async () => {
     setIsGeneratingDetails(true);
@@ -121,8 +125,8 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
             <div>
               <h3 className="text-2xl font-serif font-bold mb-5 text-foreground">Ingredients</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {displayRecipe.ingredients.map((ingredient, idx) => {
-                  const hasIngredient = displayRecipe.hasIngredients.includes(ingredient);
+                {ingredients.map((ingredient, idx) => {
+                  const hasIngredient = hasIngredients.includes(ingredient);
                   return (
                     <div
                       key={`${ingredient}-${idx}`}
@@ -151,7 +155,7 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
             {/* Loading animation while generating */}
             {isGeneratingDetails && (
               <div className="flex items-center justify-center py-8 bg-primary/5 rounded-2xl">
-                <WaveLoader bars={5} message="Generating recipe details with AI..." messagePlacement="right" />
+                <GooeyLoader message="Generating recipe details with AI..." />
               </div>
             )}
 
@@ -165,18 +169,20 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
 
                 {/* Meta info */}
                 <div className="flex flex-wrap gap-3 items-center pb-6 border-b border-border">
-                  <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
+                <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
                     <Clock className="w-4 h-4 text-primary" />
                     <div className="text-sm font-semibold text-foreground">
-                      <span>Prep:</span> {displayRecipe.prepTime}m
+                      <span>Prep:</span> {prepTime}m
                       <span className="mx-2">•</span>
-                      <span>Cook:</span> {displayRecipe.cookTime}m
+                      <span>Cook:</span> {cookTime}m
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
-                    <ChefHat className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold text-foreground">{displayRecipe.difficulty}</span>
-                  </div>
+                  {displayRecipe.difficulty && (
+                    <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
+                      <ChefHat className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-semibold text-foreground">{displayRecipe.difficulty}</span>
+                    </div>
+                  )}
                   {displayRecipe.cuisine && (
                     <div className="bg-secondary/50 px-4 py-2 rounded-full">
                       <span className="text-sm font-semibold text-foreground">{displayRecipe.cuisine}</span>
@@ -227,7 +233,7 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
               </div>
               {hasInstructions ? (
                 <div className="space-y-5">
-                  {displayRecipe.instructions.map((instruction, idx) => (
+                  {(displayRecipe.instructions || []).map((instruction, idx) => (
                     <div key={idx} className="flex gap-4 group">
                       <span className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-base font-bold shadow-md">
                         {idx + 1}
