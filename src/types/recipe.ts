@@ -13,6 +13,7 @@ export interface Recipe {
   servings?: number;
   equipment?: string[];
   chef_tips?: string[];
+  relevanceScore?: number;
 }
 
 export interface RecipeMatch extends Recipe {
