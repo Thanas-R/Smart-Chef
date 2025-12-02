@@ -3,15 +3,20 @@ interface MatchBadgeProps {
 }
 
 export const MatchBadge = ({ percentage }: MatchBadgeProps) => {
-  const isHighMatch = percentage >= 80;
+  // Color thresholds: green for high (80+), yellow for medium (50-79), red for low (<50)
+  const getMatchColor = () => {
+    if (percentage >= 80) {
+      return "bg-green-500/10 text-green-600 border-2 border-green-500/20";
+    } else if (percentage >= 50) {
+      return "bg-yellow-500/10 text-yellow-600 border-2 border-yellow-500/20";
+    } else {
+      return "bg-red-500/10 text-red-600 border-2 border-red-500/20";
+    }
+  };
   
   return (
     <div
-      className={`inline-flex items-center px-4 py-2 rounded-full text-xs font-bold shadow-sm ${
-        isHighMatch
-          ? "bg-success/10 text-success border-2 border-success/20"
-          : "bg-primary/10 text-primary border-2 border-primary/20"
-      }`}
+      className={`inline-flex items-center px-4 py-2 rounded-full text-xs font-bold shadow-sm ${getMatchColor()}`}
     >
       {percentage}% Match
     </div>

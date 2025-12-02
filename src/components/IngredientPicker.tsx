@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { X, Search, ArrowRight } from "lucide-react";
 import { api } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
+import Fuse from "fuse.js";
 
 interface IngredientPickerProps {
   selectedIngredients: string[];
@@ -40,19 +41,31 @@ export const IngredientPicker = ({
     fetchIngredients();
   }, []);
 
+  // Setup Fuse.js for fuzzy search
+  const fuse = useMemo(() => {
+    return new Fuse(allIngredients, {
+      threshold: 0.4, // 0 = exact match, 1 = match anything
+      distance: 100,
+      minMatchCharLength: 1,
+      keys: [''] // Search the string itself
+    });
+  }, [allIngredients]);
+
   useEffect(() => {
     if (inputValue.trim()) {
-      const filtered = allIngredients.filter(
-        (ingredient) =>
-          ingredient.toLowerCase().includes(inputValue.toLowerCase()) &&
-          !selectedIngredients.includes(ingredient)
-      );
+      // Use fuzzy search to find closest matches
+      const fuzzyResults = fuse.search(inputValue);
+      const filtered = fuzzyResults
+        .map(result => result.item)
+        .filter(ingredient => !selectedIngredients.includes(ingredient))
+        .slice(0, 10); // Limit to top 10 results
+      
       setFilteredSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
     } else {
       setShowSuggestions(false);
     }
-  }, [inputValue, selectedIngredients, allIngredients]);
+  }, [inputValue, selectedIngredients, fuse]);
 
   const addIngredient = (ingredient: string) => {
     if (!selectedIngredients.includes(ingredient)) {
