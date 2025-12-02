@@ -19,15 +19,11 @@ export const RecipeCard = ({
         <h3 className="text-xl font-serif font-bold group-hover:text-primary transition-colors leading-tight flex-1">
           {recipe.title}
         </h3>
-        <div className="flex flex-col items-end gap-1">
-          <MatchBadge percentage={recipe.matchPercentage} />
-          {typeof recipe.relevanceScore === "number" && (
-            <span className="text-[10px] font-semibold text-muted-foreground">
-              Relevance: {recipe.relevanceScore.toFixed(0)}
-            </span>
-          )}
-        </div>
+        <MatchBadge percentage={recipe.matchPercentage} />
       </div>
+
+      {/* Meta info */}
+      
 
       {/* Ingredients summary */}
       <div className="space-y-3">
@@ -41,13 +37,6 @@ export const RecipeCard = ({
             {hasIngredients.length}/{ingredients.length}
           </span>
         </div>
-
-        {hasIngredients.length > 0 && (
-          <p className="text-xs text-foreground/70">
-            You have: {hasIngredients.slice(0, 3).join(", ")}
-            {hasIngredients.length > 3 && ` +${hasIngredients.length - 3}`}
-          </p>
-        )}
         
         {missingIngredients.length > 0 && <div className="bg-primary/5 border border-primary/20 rounded-2xl p-3">
             <p className="text-xs font-semibold text-primary mb-1">Missing:</p>

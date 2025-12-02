@@ -4,31 +4,22 @@ export interface RecipeMatchRequest {
   ingredients: string[];
 }
 
-// Backend response format (snake_case)
-interface BackendRecipeMatch {
-  id: string;
-  title: string;
-  ingredients?: string[];
-  instructions?: string[];
-  prepTime?: number;
-  cookTime?: number;
-  difficulty?: "Easy" | "Medium" | "Hard";
-  cuisine?: string;
-  note?: string;
-  match_percentage?: number;
-  matchPercentage?: number;
-  relevanceScore?: number;
-  hasIngredients?: string[];
-  missingIngredients?: string[];
-}
-
-
 export interface RecipeMatchResponse {
-  matches: BackendRecipeMatch[];
+  matches: Array<{
+    id: string;
+    title: string;
+    ingredients: string[];
+    instructions: string[];
+    prepTime: number;
+    cookTime: number;
+    difficulty: "Easy" | "Medium" | "Hard";
+    cuisine?: string;
+    note?: string;
+    matchPercentage: number;
+    missingIngredients: string[];
+    hasIngredients: string[];
+  }>;
 }
-
-// Frontend format (camelCase) - imported from types/recipe.ts
-import { RecipeMatch } from "@/types/recipe";
 
 export interface IngredientsResponse {
   ingredients: string[];
@@ -44,8 +35,8 @@ export const api = {
     return data.ingredients;
   },
 
-  async matchRecipes(ingredients: string[]): Promise<RecipeMatch[]> {
-    const res = await fetch(`${BASE_URL}/api/recipes/match?sort=tfidf`, {
+  async matchRecipes(ingredients: string[]): Promise<RecipeMatchResponse["matches"]> {
+    const res = await fetch(`${BASE_URL}/api/recipes/match`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ingredients }),
@@ -54,49 +45,36 @@ export const api = {
       throw new Error(`Failed to match recipes: ${res.statusText}`);
     }
     const data: RecipeMatchResponse = await res.json();
-
-    const filteredRecipes = (data.matches || [])
-      .map((recipe) => {
+    
+    // Filter out recipes with 0% match and calculate hasIngredients/missingIngredients
+    return data.matches
+      .filter(recipe => recipe.matchPercentage > 0)
+      .map(recipe => {
         const recipeIngredients = recipe.ingredients || [];
-        const userIngredients = ingredients.map((i) => i.toLowerCase());
-
-        // Prefer backend-provided has/missing ingredients if available
-        const hasIngredients =
-          recipe.hasIngredients && recipe.hasIngredients.length > 0
-            ? recipe.hasIngredients
-            : recipeIngredients.filter((ingredient) =>
-                userIngredients.some((userIng) =>
-                  ingredient.toLowerCase().includes(userIng) ||
-                  userIng.includes(ingredient.toLowerCase())
-                )
-              );
-
-        const missingIngredients =
-          recipe.missingIngredients && recipe.missingIngredients.length > 0
-            ? recipe.missingIngredients
-            : recipeIngredients.filter((ingredient) =>
-                !userIngredients.some((userIng) =>
-                  ingredient.toLowerCase().includes(userIng) ||
-                  userIng.includes(ingredient.toLowerCase())
-                )
-              );
-
-        const rawMatch = recipe.match_percentage ?? recipe.matchPercentage ?? 0;
-        const { match_percentage, matchPercentage, ...recipeData } = recipe;
-
+        const userIngredients = ingredients.map(i => i.toLowerCase());
+        
+        // Calculate which ingredients the user has
+        const hasIngredients = recipeIngredients.filter(ingredient => 
+          userIngredients.some(userIng => 
+            ingredient.toLowerCase().includes(userIng) || 
+            userIng.includes(ingredient.toLowerCase())
+          )
+        );
+        
+        // Calculate which ingredients are missing
+        const missingIngredients = recipeIngredients.filter(ingredient => 
+          !userIngredients.some(userIng => 
+            ingredient.toLowerCase().includes(userIng) || 
+            userIng.includes(ingredient.toLowerCase())
+          )
+        );
+        
         return {
-          ...recipeData,
-          matchPercentage: rawMatch,
+          ...recipe,
           hasIngredients,
-          missingIngredients,
-        } as RecipeMatch;
-      })
-      // Filter out recipes with 0% match
-      .filter((recipe) => recipe.matchPercentage > 0)
-      // Sort by match percentage descending (highest match first)
-      .sort((a, b) => b.matchPercentage - a.matchPercentage);
-
-    return filteredRecipes;
+          missingIngredients
+        };
+      });
   },
 
   async generateInstructions(recipeId: string, recipeName: string, ingredients: string[]): Promise<string[]> {
