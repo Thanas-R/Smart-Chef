@@ -14,6 +14,7 @@ import { api } from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { GooeyLoader } from "./ui/gooey-loader";
+import ImageLoader from "./ui/image-loader";
 
 interface RecipeModalProps {
   recipe: RecipeMatch | null;
@@ -220,18 +221,32 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
             <div>
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-2xl font-serif font-bold text-foreground">Instructions</h3>
-                {!hasInstructions && !isGeneratingDetails && (
+                {!hasInstructions && !isGeneratingDetails && !isGenerating && (
                   <Button
                     onClick={handleGenerateInstructions}
                     disabled={isGenerating}
                     className="gap-2"
                   >
                     <Sparkles className="w-4 h-4" />
-                    {isGenerating ? "Generating..." : "Generate Instructions"}
+                    Generate Instructions
                   </Button>
                 )}
               </div>
-              {hasInstructions ? (
+              {isGenerating ? (
+                <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                  <ImageLoader
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23cbd5e1' width='100' height='100'/%3E%3C/svg%3E"
+                    alt="Loading"
+                    width={100}
+                    height={100}
+                    gridSize={15}
+                    cellShape="circle"
+                    cellGap={3}
+                    blinkSpeed={800}
+                  />
+                  <p className="text-sm text-muted-foreground font-medium">Generating...</p>
+                </div>
+              ) : hasInstructions ? (
                 <div className="space-y-5">
                   {(displayRecipe.instructions || []).map((instruction, idx) => (
                     <div key={idx} className="flex gap-4 group">
