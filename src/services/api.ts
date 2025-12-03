@@ -1,24 +1,16 @@
 const BASE_URL = "https://smartchef-backend-oq3n.onrender.com";
 
-export interface RecipeMatchRequest {
-  ingredients: string[];
-}
-
 export interface RecipeMatchResponse {
-  matches: Array<{
-    id: string;
-    title: string;
-    ingredients: string[];
-    instructions: string[];
-    prepTime: number;
-    cookTime: number;
-    difficulty: "Easy" | "Medium" | "Hard";
-    cuisine?: string;
-    note?: string;
-    matchPercentage: number;
-    missingIngredients: string[];
-    hasIngredients: string[];
-  }>;
+  id: string;
+  title: string;
+  name?: string;
+  note?: string;
+  ingredients: string[];
+  instructions: string[];
+  hasIngredients: string[];
+  missingIngredients: string[];
+  matchPercentage: number;
+  relevanceScore: number;
 }
 
 export interface IngredientsResponse {
@@ -35,8 +27,8 @@ export const api = {
     return data.ingredients;
   },
 
-  async matchRecipes(ingredients: string[]): Promise<RecipeMatchResponse["matches"]> {
-    const res = await fetch(`${BASE_URL}/api/recipes/match`, {
+  async matchRecipes(ingredients: string[]): Promise<RecipeMatchResponse[]> {
+    const res = await fetch(`${BASE_URL}/api/recipes/match?sort=tfidf`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ingredients }),
@@ -44,37 +36,9 @@ export const api = {
     if (!res.ok) {
       throw new Error(`Failed to match recipes: ${res.statusText}`);
     }
-    const data: RecipeMatchResponse = await res.json();
-    
-    // Filter out recipes with 0% match and calculate hasIngredients/missingIngredients
-    return data.matches
-      .filter(recipe => recipe.matchPercentage > 0)
-      .map(recipe => {
-        const recipeIngredients = recipe.ingredients || [];
-        const userIngredients = ingredients.map(i => i.toLowerCase());
-        
-        // Calculate which ingredients the user has
-        const hasIngredients = recipeIngredients.filter(ingredient => 
-          userIngredients.some(userIng => 
-            ingredient.toLowerCase().includes(userIng) || 
-            userIng.includes(ingredient.toLowerCase())
-          )
-        );
-        
-        // Calculate which ingredients are missing
-        const missingIngredients = recipeIngredients.filter(ingredient => 
-          !userIngredients.some(userIng => 
-            ingredient.toLowerCase().includes(userIng) || 
-            userIng.includes(ingredient.toLowerCase())
-          )
-        );
-        
-        return {
-          ...recipe,
-          hasIngredients,
-          missingIngredients
-        };
-      });
+    const data = await res.json();
+    // Backend returns { matches: [...] }
+    return data?.matches ?? [];
   },
 
   async generateInstructions(recipeId: string, recipeName: string, ingredients: string[]): Promise<string[]> {

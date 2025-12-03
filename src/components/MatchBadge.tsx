@@ -1,9 +1,10 @@
 interface MatchBadgeProps {
-  percentage: number;
+  relevance: number;
 }
 
-export const MatchBadge = ({ percentage }: MatchBadgeProps) => {
-  const isHighMatch = percentage >= 80;
+export const MatchBadge = ({ relevance }: MatchBadgeProps) => {
+  const pct = Math.max(0, Math.min(100, Math.round(relevance || 0)));
+  const isHighMatch = pct >= 80;
   
   return (
     <div
@@ -13,7 +14,7 @@ export const MatchBadge = ({ percentage }: MatchBadgeProps) => {
           : "bg-primary/10 text-primary border-2 border-primary/20"
       }`}
     >
-      {percentage}% Match
+      {pct}% Relevance
     </div>
   );
 };

@@ -44,10 +44,25 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
 
   const displayRecipe = localRecipe || recipe;
   const hasInstructions = displayRecipe.instructions && displayRecipe.instructions.length > 0;
-  const hasIngredients = displayRecipe.hasIngredients || [];
+  const hasIngredientsList = displayRecipe.hasIngredients || [];
   const ingredients = displayRecipe.ingredients || [];
   const prepTime = displayRecipe.prepTime || 0;
   const cookTime = displayRecipe.cookTime || 0;
+  
+  // relevanceScore for badge, fallback to matchPercentage
+  const relevance = typeof displayRecipe.relevanceScore === "number" 
+    ? displayRecipe.relevanceScore 
+    : (displayRecipe.matchPercentage || 0);
+
+  // Helper to check if ingredient is matched (supports fuzzy matching from backend)
+  const normalize = (s?: string) => (s || "").toLowerCase().trim().replace(/[^\w\s]/g, " ").replace(/\s+/g, " ").trim();
+  const ingredientIsMatched = (origIngredient: string) => {
+    const normalizedOrig = normalize(origIngredient);
+    return hasIngredientsList.some(h => 
+      normalize(h) === normalizedOrig || 
+      (h || "").trim().toLowerCase() === (origIngredient || "").trim().toLowerCase()
+    );
+  };
 
   const handleGenerateDetails = async () => {
     setIsGeneratingDetails(true);
@@ -126,23 +141,23 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
               <h3 className="text-2xl font-serif font-bold mb-5 text-foreground">Ingredients</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {ingredients.map((ingredient, idx) => {
-                  const hasIngredient = hasIngredients.includes(ingredient);
+                  const matched = ingredientIsMatched(ingredient);
                   return (
                     <div
                       key={`${ingredient}-${idx}`}
                       className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-colors ${
-                        hasIngredient
+                        matched
                           ? "bg-success/5 border-success/30"
                           : "bg-muted/30 border-border"
                       }`}
                     >
-                      {hasIngredient ? (
+                      {matched ? (
                         <Check className="w-5 h-5 text-success flex-shrink-0" />
                       ) : (
                         <X className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                       )}
                       <span className={`text-sm font-semibold ${
-                        hasIngredient ? "text-foreground" : "text-muted-foreground"
+                        matched ? "text-foreground" : "text-muted-foreground"
                       }`}>
                         {ingredient}
                       </span>
@@ -193,7 +208,7 @@ export const RecipeModal = ({ recipe, isOpen, onClose }: RecipeModalProps) => {
                       <span className="text-sm font-semibold text-foreground">Serves {displayRecipe.servings}</span>
                     </div>
                   )}
-                  <MatchBadge percentage={recipe.matchPercentage} />
+                  <MatchBadge relevance={relevance} />
                 </div>
               </>
             )}
