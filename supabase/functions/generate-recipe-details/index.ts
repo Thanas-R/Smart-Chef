@@ -91,8 +91,23 @@ Important:
       throw new Error("No content in AI response");
     }
 
-    // Parse the JSON response
-    const recipeDetails = JSON.parse(content);
+    // Clean and parse the JSON response
+    // Remove markdown code blocks if present
+    let cleanContent = content.trim();
+    if (cleanContent.startsWith("```json")) {
+      cleanContent = cleanContent.slice(7);
+    } else if (cleanContent.startsWith("```")) {
+      cleanContent = cleanContent.slice(3);
+    }
+    if (cleanContent.endsWith("```")) {
+      cleanContent = cleanContent.slice(0, -3);
+    }
+    cleanContent = cleanContent.trim();
+    
+    // Remove control characters that break JSON parsing (except allowed whitespace)
+    cleanContent = cleanContent.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    
+    const recipeDetails = JSON.parse(cleanContent);
 
     return new Response(
       JSON.stringify(recipeDetails),
