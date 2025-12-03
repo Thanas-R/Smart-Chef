@@ -16,7 +16,8 @@ export interface Recipe {
 }
 
 export interface RecipeMatch extends Recipe {
-  matchPercentage: number;
-  missingIngredients?: string[];
   hasIngredients?: string[];
+  missingIngredients?: string[];
+  matchPercentage?: number;
+  relevanceScore?: number;
 }
