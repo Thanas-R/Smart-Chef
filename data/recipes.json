@@ -1,4 +1,5 @@
 [
+  {"name":"Ken special","note":"ken is a masterchef style cook","ingredients":["beef","cooking wine","pepper"]
   {"name":"Scrambled Eggs","note":"Quick breakfast, soft and fluffy.","ingredients":["eggs","milk","butter","salt","black pepper"]},
   {"name":"Omelette","note":"Fill with veggies for a healthy start.","ingredients":["eggs","onion","tomato","bell pepper","salt","black pepper","butter"]},
   {"name":"Grilled Cheese Sandwich","note":"Classic comfort sandwich, melt the cheese.","ingredients":["bread","cheddar","butter"]},
@@ -351,4 +352,5 @@
   {"name":"Tomato & Basil Soup (Creamless)","note":"Bright soup without heavy cream.","ingredients":["tomato","onion","garlic","basil","vegetable stock"]},
   {"name":"Paneer & Spinach Stuffed Paratha","note":"Hearty stuffed flatbread filled with paneer and spinach.","ingredients":["wheat flour","paneer","spinach","salt","butter"]}
 ]
+
 
