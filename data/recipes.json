@@ -1,5 +1,5 @@
 [
-  {"name":"Ken special","note":"High quality (non) special recipe.","ingredients":["garlic","cooking oil","butter","salt","black pepper","cooking red wine","chicken breasts","chili powder","turmeric powder","soy sauce","red chilli sauce","green chilli sauce","lemon juice","lemon juice extract","garam masala","cloves","bay leaf","corriander powder","black salt","amchur powder"]},
+  {"name":"Ken special","note":"High quality (non) special recipe.","ingredients":["garlic","cooking oil","butter","salt","black pepper","cooking red wine","chicken breast","chili powder","turmeric powder","soy sauce","red chili sauce","green chili sauce","lemon juice","lemon juice extract","garam masala","cloves","bay leaf","coriander powder","black salt","amchur powder"]},
   {"name":"Scrambled Eggs","note":"Quick breakfast, soft and fluffy.","ingredients":["eggs","milk","butter","salt","black pepper"]},
   {"name":"Omelette","note":"Fill with veggies for a healthy start.","ingredients":["eggs","onion","tomato","bell pepper","salt","black pepper","butter"]},
   {"name":"Grilled Cheese Sandwich","note":"Classic comfort sandwich, melt the cheese.","ingredients":["bread","cheddar","butter"]},
@@ -352,6 +352,7 @@
   {"name":"Tomato & Basil Soup (Creamless)","note":"Bright soup without heavy cream.","ingredients":["tomato","onion","garlic","basil","vegetable stock"]},
   {"name":"Paneer & Spinach Stuffed Paratha","note":"Hearty stuffed flatbread filled with paneer and spinach.","ingredients":["wheat flour","paneer","spinach","salt","butter"]}
 ]
+
 
 
 
