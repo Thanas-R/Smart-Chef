@@ -14,15 +14,15 @@ const teamMembers: TeamMember[] = [{
   linkedin: "https://www.linkedin.com/in/thanasr/",
   domain: "https://thanas.vercel.app/"
 }, {
-  name: "Ken George Koshy",
-  branch: "CSE",
-  github: "https://github.com/kengeorgeoff182-code",
-  linkedin: undefined
-}, {
   name: "Tanay S",
   branch: "CSE",
   github: "https://github.com/Tanay-s5",
   linkedin: "https://www.linkedin.com/in/tanay-s-8a46b0390/"
+}, {
+  name: "Ken George Koshy",
+  branch: "CSE",
+  github: "https://github.com/kengeorgeoff182-code",
+  linkedin: undefined
 }, {
   name: "Vamshik Kudlur M R",
   branch: "CSE(AIML)",
