@@ -1,4 +1,4 @@
-# 🍳 SmartChef — TF-IDF Backend
+# SmartChef — TF-IDF Backend
 
 FastAPI backend for ingredient-based recipe matching using TF-IDF vectors, fuzzy mapping, and cosine similarity.
 
