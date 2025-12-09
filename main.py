@@ -328,7 +328,7 @@ async def api_match(req: MatchRequest, sort: str = Query("tfidf"), top_k: Option
         results.sort(key=lambda x: (x["relevanceScore"], x["matchPercentage"]), reverse=True)
 
     if top_k is not None and isinstance(top_k, int) and top_k > 0:
-        results = results[:top_k]
+        results = results[:top_k] #top_k isnot explicitly used in the backend but can be specified in the forntend 
 
     return {"matches": results}
 
@@ -339,4 +339,5 @@ async def api_recompute_index():
     INGREDIENTS = load_ingredients()
     build_tfidf_index(RECIPES)
     return {"status": "ok", "recipes": len(RECIPES)}
+
 
