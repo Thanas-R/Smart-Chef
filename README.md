@@ -41,9 +41,10 @@ GET https://smartchef-backend-oq3n.onrender.com/api/ingredients
 POST https://smartchef-backend-oq3n.onrender.com/api/recipes/match
 
 **Sample Request Body:**
+[The backend responds with matched recipes, similarity scores, and ingredient analysis]
+
 ```json
 {
   "user_ingredients": ["egg", "milk", "flour"]
 }
-The backend responds with matched recipes, similarity scores, and ingredient analysis.
 
