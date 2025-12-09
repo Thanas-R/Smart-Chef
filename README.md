@@ -1,20 +1,32 @@
-# SmartChef - TF-IDF Backend
+# 🍳 SmartChef — TF-IDF Backend
 
-This backend uses scikit-learn TF-IDF vectors to match ingredients / search recipes.
+FastAPI backend for ingredient-based recipe matching using TF-IDF vectors, fuzzy mapping, and cosine similarity.
 
-## Run locally
-1. Create `data/recipes.json` and `data/ingredients.json`.
-2. `pip install -r requirements.txt`
-3. `uvicorn main:app --reload --host 0.0.0.0 --port 8000`
+## 🚀 Live Backend
+https://smartchef-backend-oq3n.onrender.com/
 
-## Endpoints
-- GET `/` health
-- GET `/api/ingredients` -> { ingredients: [...] }
-- GET `/api/recipes` -> { recipes: [...] } (metadata)
-- GET `/api/recipes/{id}` -> full recipe object
-- POST `/api/recipes/match` -> { ingredients: [...] } -> matches with has/missing + scores
-- GET `/api/recipes/search?q=...` -> semantic search
-- POST `/api/admin/reindex` -> reindex recipes.json
+## 📦 Run Locally
+1. Add your datasets:  
+   - `data/recipes.json`  
+   - `data/ingredients.json`
+2. Install dependencies:
+pip install -r requirements.txt
+3. Start server:
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
-## Deployment
-Use Render or any host. Ensure `startCommand` is `uvicorn main:app --host 0.0.0.0 --port $PORT`.
+## 🔌 API Endpoints
+- **GET /** — Health + recipe count  
+- **GET /api/ingredients** — Ingredient list  
+- **GET /api/recipes** — Recipe metadata  
+- **POST /api/recipes/match** — Ingredient match + similarity scores  
+- **POST /api/recompute-index** — Rebuild TF-IDF index  
+
+## ☁️ Deployment
+Works on Render / Railway / any Python host.  
+Use:
+uvicorn main:app --host 0.0.0.0 --port $PORT
+
+## 📁 Requirements
+fastapi>=0.95
+uvicorn[standard]>=0.22
+pydantic>=1.10
