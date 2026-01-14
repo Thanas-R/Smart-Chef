@@ -1,5 +1,7 @@
 # SmartChef — Full Stack Recipe Matching System
 
+i wanted tis badge alr , pls accep
+
 SmartChef is a full-stack web application that provides intelligent recipe matching based on user-provided ingredients.  
 It combines a lightweight frontend with a FastAPI backend that uses TF-IDF vectors, fuzzy ingredient mapping, and cosine similarity to suggest recipes and generate cooking steps using AI.
 
