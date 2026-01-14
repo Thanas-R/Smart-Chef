@@ -3,7 +3,7 @@
 SmartChef is a full-stack web application that provides intelligent recipe matching based on user-provided ingredients.  
 It combines a lightweight frontend with a FastAPI backend that uses TF-IDF vectors, fuzzy ingredient mapping, and cosine similarity to suggest recipes and generate cooking steps using AI.
 
-Demo: https://smart-chef-pesu.vercel.app/ [might take 4-5 minutes to start working completetly]
+> **Demo:** https://smart-chef-pesu.vercel.app/ [might take 4-5 minutes to start working completetly]
 
 ## Overview
 
@@ -223,7 +223,3 @@ pydantic>=1.10
 ```
 
 
-
-
-Just tell me.
-```
