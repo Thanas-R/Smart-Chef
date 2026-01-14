@@ -1,9 +1,9 @@
-# SmartChef — Full Stack Recipe Matching System
+ch# SmartChef — Full Stack Recipe Matching System
 
 i wanted tis badge alr , pls accep
 
 SmartChef is a full-stack web application that provides intelligent recipe matching based on user-provided ingredients.  
-It combines a lightweight frontend with a FastAPI backend that uses TF-IDF vectors, fuzzy ingredient mapping, and cosine similarity to suggest recipes and generate cooking steps using AI.
+It combines a lightweight frontend with a FastAPI backend that uses TF-IDF vectors, fuzzy search mapping to ingredients , and cosine similarity to suggest recipes and generate cooking steps using AI.
 
 > **Demo:** https://smart-chef-pesu.vercel.app/ [might take 4-5 minutes to start working completetly]
 
@@ -47,9 +47,21 @@ Recipe Matches + AI Cooking Instructions
 - Ingredient-based recipe matching using TF-IDF
 - Fuzzy ingredient normalization
 - Cosine similarity scoring
-- AI-powered cooking instruction generation (Google Gemini 2.5 Flash)
 - JSON-based dataset support
 - Production-ready FastAPI server
+
+###  Search Architecture
+This design follows the **Vector Space Model (VSM)**
+
+This project implements a **information retrieval system** using an
+**in-memory TF-IDF vector space model**, instead of relying on external databases
+or pretrained embedding models.
+
+Each recipe is converted into a **sparse TF-IDF vector**, where ingredient
+importance is directly encoded as vector values. These vectors are stored
+entirely in RAM and compared using **cosine similarity**, allowing fast
+similarity calculations without using secondary memory.
+
 
 
 ## Tech Stack
